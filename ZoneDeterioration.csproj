@@ -43,12 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="1.4\Languages\English\Keyed\Keys.xml" />
-    <Content Include="1.4\Patches\DesignationCategories.xml" />
     <Content Include="About\About.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="1.4\Assemblies\" />
     <Folder Include="1.4\Defs\" />
+    <Folder Include="1.4\Patches\" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -60,7 +60,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="HugsLib">
-      <HintPath>C:\Users\tk421\.nuget\packages\unlimitedhugs.rimworld.hugslib\9.0.1\lib\net472\HugsLib.dll</HintPath>
+      <HintPath>..\..\..\..\workshop\content\294100\818773962\v1.4\Assemblies\HugsLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
