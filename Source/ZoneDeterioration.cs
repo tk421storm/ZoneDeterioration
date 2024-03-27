@@ -75,16 +75,21 @@ namespace TKS_ZoneDeterioration
 
         public static bool ContainingZoneWantsMessage(this Thing t)
         {
+            if (t == null) { return true; }
+
             IntVec3 loc = t.Position;
             Map map = t.Map;
 
-            Zone zone = map.zoneManager.ZoneAt(loc);
+            Zone zone = map?.zoneManager?.ZoneAt(loc);
             if (zone != null)
             {
                 ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
 
-                bool showMessage = store.GetExtendedDataFor(zone).showWarning;
-                return showMessage;
+                if (store != null)
+                {
+                    bool showMessage = store.GetExtendedDataFor(zone).showWarning;
+                    return showMessage;
+                }
             }
 
             return true;
@@ -309,86 +314,6 @@ namespace TKS_ZoneDeterioration
     [HarmonyPatch(typeof(Plant))]
     public class Plant_Patches
     {
-        /*
-        [HarmonyPatch(typeof(Plant), "MakeLeafless")]
-        [HarmonyPrefix]
-        public static bool MakeLeafless(ref Plant __instance, Plant.LeaflessCause cause)
-        {
-            //Log.Message("running MakeLeafless on plant " + __instance.ToString());
-            Map map = __instance.Map;
-
-            //check if we're in a zone, otherwise do original method
-            Zone gardenZone = GridsUtility.GetZone(__instance.Position, map) as Zone;
-
-            if (gardenZone is null)
-            {
-                return true;
-            }
-
-            //check for the display message flag on the zone
-            //get setting for zone
-            ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
-
-            bool showMessage = store.GetExtendedDataFor(gardenZone).showWarning;
-
-            //have to copy-paste the rest unfortunately
-            bool flag = !__instance.LeaflessNow;
-
-            if (cause == Plant.LeaflessCause.Poison && __instance.def.plant.leaflessGraphic == null)
-            {
-                if (__instance.IsCrop && MessagesRepeatAvoider.MessageShowAllowed("MessagePlantDiedOfPoison-" + __instance.def.defName, 240f) && showMessage)
-                {
-                    Messages.Message("MessagePlantDiedOfPoison".Translate(__instance.GetCustomLabelNoCount(false)), new TargetInfo(__instance.Position, map, false), MessageTypeDefOf.NegativeEvent, true);
-                }
-                __instance.TakeDamage(new DamageInfo(DamageDefOf.Rotting, 99999f, 0f, -1f, null, null, null, DamageInfo.SourceCategory.ThingOrUnknown, null, true, true));
-            }
-            else if (__instance.def.plant.dieIfLeafless)
-            {
-                if (__instance.IsCrop)
-                {
-                    if (cause == Plant.LeaflessCause.Cold)
-                    {
-                        if (MessagesRepeatAvoider.MessageShowAllowed("MessagePlantDiedOfCold-" + __instance.def.defName, 240f) && showMessage)
-                        {
-                            Messages.Message("MessagePlantDiedOfCold".Translate(__instance.GetCustomLabelNoCount(false)), new TargetInfo(__instance.Position, map, false), MessageTypeDefOf.NegativeEvent, true);
-                        }
-                    }
-                    else if (cause == Plant.LeaflessCause.Poison)
-                    {
-                        if (MessagesRepeatAvoider.MessageShowAllowed("MessagePlantDiedOfPoison-" + __instance.def.defName, 240f) && showMessage)
-                        {
-                            Messages.Message("MessagePlantDiedOfPoison".Translate(__instance.GetCustomLabelNoCount(false)), new TargetInfo(__instance.Position, map, false), MessageTypeDefOf.NegativeEvent, true);
-                        }
-                    }
-                    else if (cause == Plant.LeaflessCause.Pollution)
-                    {
-                        if (MessagesRepeatAvoider.MessageShowAllowed("MessagePlantDiedOfPollution-" + __instance.def.defName, 240f) && showMessage)
-                        {
-                            Messages.Message("MessagePlantDiedOfPollution".Translate(__instance.GetCustomLabelNoCount(false)), new TargetInfo(__instance.Position, map, false), MessageTypeDefOf.NegativeEvent, true);
-                        }
-                    }
-                    else if (cause == Plant.LeaflessCause.NoPollution && MessagesRepeatAvoider.MessageShowAllowed("MessagePlantDiedOfNoPollution-" + __instance.def.defName, 240f) && showMessage)
-                    {
-                        Messages.Message("MessagePlantDiedOfNoPollution".Translate(__instance.GetCustomLabelNoCount(false)), new TargetInfo(__instance.Position, map, false), MessageTypeDefOf.NegativeEvent, true);
-                    }
-                }
-                __instance.TakeDamage(new DamageInfo(DamageDefOf.Rotting, 99999f, 0f, -1f, null, null, null, DamageInfo.SourceCategory.ThingOrUnknown, null, true, true));
-            }
-            else
-            {
-                FieldInfo madeLeaflessTickField = __instance.GetType().GetField("madeLeaflessTick", BindingFlags.NonPublic | BindingFlags.Instance);
-                madeLeaflessTickField.SetValue(__instance, Find.TickManager.TicksGame);
-            }
-            if (flag)
-            {
-                map.mapDrawer.MapMeshDirty(__instance.Position, MapMeshFlag.Things);
-            }
-
-            return false;
-        }
-    }
-    */
-
         [HarmonyPatch(typeof(Plant), "MakeLeafless")]
         public static class PlantTrans
         {

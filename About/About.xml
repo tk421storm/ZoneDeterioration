@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ModMetaData>
-	<name>ZoneDeterioration</name>
+	<name>Zone Message Control</name>
 	<!-- The name of your mod in the mod list -->
 	<author>tk421storm</author>
 	<packageId>tk421storm.ZoneDeterioration</packageId>
@@ -8,6 +8,7 @@
 	<supportedVersions>
 		<!-- the version(s) your mod supports -->
 		<li>1.4</li>
+		<li>1.5</li>
 	</supportedVersions>
 	<description>Toggle item deterioration messages on a per-zone basis.</description>
 	<modDependencies>
