@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -15,23 +16,29 @@ namespace TKS_ZoneDeterioration
         static InsertHarmony()
         {
             Harmony harmony = new Harmony("TKS_ZoneDeterioration");
-            //Harmony.DEBUG = true;
+            Harmony.DEBUG = true;
+            Log.Message("harmony debugging to " + FileLog.LogPath);
             harmony.PatchAll();
             //Harmony.DEBUG = false;
             Log.Message($"TKS_ZoneDeterioration: Patching finished");
         }
     }
 
-    public class Base : ModBase
+    public class ZoneDeteriorationBase : ModBase
     {
         private ExtendedDataStorage _extendedDataStorage;
-        public static Base Instance { get; private set; }
+        public static ZoneDeteriorationBase Instance { get; private set; }
+
+        public static List<string> interestedMessageKeys = new List<string>() { "MessageDeterioratedAway", "MessagePlantDiedOfCold", "MessagePlantDiedOfRot_LeftUnharvested",
+        "MessagePlantDiedOfRot_ExposedToLight", "MessagePlantDiedOfRot",  "MessagePlantDiedOfPoison", "MessagePlantDiedOfBlight", "MessageRottedAwayInStorage" };
+
+        public static List<string> interestedMessages = new List<string>() { };
 
         public override string ModIdentifier
         {
             get { return "TKS_ZoneDeterioration"; }
         }
-        public Base()
+        public ZoneDeteriorationBase()
         {
             Instance = this;
         }
@@ -43,6 +50,31 @@ namespace TKS_ZoneDeterioration
             _extendedDataStorage = Find.World.GetComponent<ExtendedDataStorage>();
             _extendedDataStorage.Cleanup();
 
+            Thing testThing = ThingMaker.MakeThing(ThingDefOf.Urn, ThingDefOf.Steel);
+            Map map = Find.AnyPlayerHomeMap;
+            GenSpawn.Spawn(testThing, CellFinder.RandomEdgeCell(map), map, WipeMode.FullRefund);
+
+            //build interested strings list
+            foreach(string messageKey in interestedMessageKeys)
+            {
+                string message = "";
+                //some message types will error because we dont have a thing to pass, but it will still resolve ok for our purposes
+                try
+                {
+                    message = messageKey.Translate("urn", testThing);
+                    message = message.Replace("urn ", "");
+                    message = message.Replace("steel ", "");
+                } catch (Exception e) 
+                { } finally
+                {
+                    Log.Message("zone deterioration looking for text '" + message + "'");
+                    interestedMessages.Add(message);
+                }
+
+            }
+
+            testThing.Destroy();
+
         }
 
         public ExtendedDataStorage GetExtendedDataStorage()
@@ -53,42 +85,69 @@ namespace TKS_ZoneDeterioration
 
     public static class Utilities
     {
-        public static bool ContainingStorageWantsMessage(this Thing t)
-        {
-            IntVec3 loc = t.Position;
-            Map map = t.Map;
-
-            if (map.thingGrid.CellContains(loc, ThingCategory.Building)) {
-                Building building = map.thingGrid.ThingAt<Building>(loc) as Building_Storage;
-
-                if (building != null)
-                {
-                    ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
-
-                    bool showMessage = store.GetExtendedDataFor(building).showWarning;
-                    return showMessage;
-                }
-            }
-
-            return true;
-        }
-
-        public static bool ContainingZoneWantsMessage(this Thing t)
+        public static bool ContainingStorageWantsMessage(Thing t)
         {
             if (t == null) { return true; }
 
             IntVec3 loc = t.Position;
             Map map = t.Map;
 
+            return ContainingStorageWantsMessage(loc, map);
+        }
+
+        public static bool ContainingStorageWantsMessage(IntVec3 loc, Map map)
+        {
+
+            if (map.thingGrid.CellContains(loc, ThingCategory.Building))
+            {
+                Building building = map.thingGrid.ThingAt<Building>(loc) as Building_Storage;
+
+                if (building != null)
+                {
+                    ExtendedDataStorage store = ZoneDeteriorationBase.Instance.GetExtendedDataStorage();
+
+                    if (store != null)
+                    {
+                        Log.Message("checking zone message storage setting for building " + building.ThingID);
+                        bool showMessage = store.GetExtendedDataFor(building).showWarning;
+                        return showMessage;
+                    }
+                    else
+                    {
+                        Log.Warning("no zone message storage setting for building " + building.ThingID);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public static bool ContainingZoneWantsMessage(Thing t)
+        {
+            if (t == null) { return true; }
+
+            IntVec3 loc = t.Position;
+            Map map = t.Map;
+
+            return ContainingZoneWantsMessage(loc, map);
+        }
+        public static bool ContainingZoneWantsMessage(IntVec3 loc, Map map)
+        {
             Zone zone = map?.zoneManager?.ZoneAt(loc);
             if (zone != null)
             {
-                ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
+                ExtendedDataStorage store = ZoneDeteriorationBase.Instance.GetExtendedDataStorage();
 
                 if (store != null)
                 {
+                    Log.Message("checking show messages setting for " + zone.BaseLabel);
                     bool showMessage = store.GetExtendedDataFor(zone).showWarning;
+
                     return showMessage;
+                }
+                else
+                {
+                    Log.Warning("no zone message storage setting for zone " + zone.BaseLabel);
                 }
             }
 
@@ -209,7 +268,7 @@ namespace TKS_ZoneDeterioration
         public static IEnumerable<Gizmo> GetGizmos(IEnumerable<Gizmo> results, Zone __state)
         {
             //get setting for zone
-            ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
+            ExtendedDataStorage store = ZoneDeteriorationBase.Instance.GetExtendedDataStorage();
 
             foreach (Gizmo giz in results)
             {
@@ -251,7 +310,7 @@ namespace TKS_ZoneDeterioration
         public static IEnumerable<Gizmo> GetGizmos(IEnumerable<Gizmo> results, Building_Storage __state)
         {
             //get setting for zone
-            ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
+            ExtendedDataStorage store = ZoneDeteriorationBase.Instance.GetExtendedDataStorage();
 
             foreach (Gizmo giz in results)
             {
@@ -277,198 +336,36 @@ namespace TKS_ZoneDeterioration
         }
     }
 
-    [HarmonyPatch(typeof(SteadyEnvironmentEffects))]
-    static class SteadyEnvironmentEffects_Patches
+    [HarmonyPatch(typeof(Messages))]
+    public static class Messages_Patches
     {
-        [HarmonyPatch(typeof(SteadyEnvironmentEffects), "DoDeteriorationDamage")]
+        [HarmonyPatch(typeof(Messages), "Message", new Type[] { typeof(string), typeof(LookTargets), typeof(MessageTypeDef), typeof(bool) })]
         [HarmonyPrefix]
-        public static bool DoDeteriorationDamage(Thing t, IntVec3 pos, Map map, ref bool sendMessage)
+        public static bool Message_Prefix(string text, LookTargets lookTargets, MessageTypeDef def, bool historical)
         {
-            if (pos == null || map == null) { return true; }
-
-            //Log.Message("running do deterioration damage prefix");
-
-            //check if it's in a zone
-            Zone stockpile = GridsUtility.GetZone(pos, map);
-
-            if (stockpile != null)
+            foreach (string searcher in ZoneDeteriorationBase.interestedMessages)
             {
-                //Log.Message("checking for zone setting re: deterioration message");
-
-                //get setting for zone
-                ExtendedDataStorage store = Base.Instance.GetExtendedDataStorage();
-
-                bool showMessage = store.GetExtendedDataFor(stockpile).showWarning;
-                if (!showMessage)
+                if (text.Contains(searcher))
                 {
-                    //Log.Message("setting deterioration message to null do to sendMessage flag = false");
-                    sendMessage = false;
-                }
+                    RimWorld.Planet.GlobalTargetInfo target = lookTargets.TryGetPrimaryTarget();
+                    IntVec3 vec = target.Cell;
+                    Map map = target.Map;
 
-            }
+                    if (vec != null) {
 
-            return true;
-        }
-    }
-
-    [HarmonyPatch(typeof(Plant))]
-    public class Plant_Patches
-    {
-        [HarmonyPatch(typeof(Plant), "MakeLeafless")]
-        public static class PlantTrans
-        {
-            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-            {
-                Log.Message($"[ZoneDeterioration] Plant.MakeLeafless Transpiler beginning");
-
-                int falseCommand = 0;
-
-                var codes = new List<CodeInstruction>(instructions);
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    bool yieldIt = true;
-
-                    if (!(codes[i].operand is null) && codes[i].operand.ToString().Contains("MessageShowAllowed"))
-                    {
-                        Log.Message("found if statement for trans");
-                        falseCommand = i + 1;
-
-                        yield return codes[i];
-                        yieldIt = false;
-
-                        yield return codes[falseCommand];
-
-                        MethodInfo showMessageFunction = AccessTools.Method(typeof(TKS_ZoneDeterioration.Utilities), nameof(Utilities.ContainingZoneWantsMessage));
-                        CodeInstruction function = new CodeInstruction(OpCodes.Callvirt, showMessageFunction);
-
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return function;
-
-                    }
-
-                    if (yieldIt)
-                    {
-                        yield return codes[i];
-                    }
-
-                }
-                Log.Message($"[ZoneDeterioration] Plant.MakeLeafless Transpiler succeeded");
-
-            }
-        }
-
-        [HarmonyPatch(typeof(Plant), "TickLong")]
-        public static class PlantTrans2
-        {
-            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-            {
-                Log.Message($"[ZoneDeterioration] Plant.TickLong Transpiler beginning");
-
-                int falseCommand = 0;
-
-                var codes = new List<CodeInstruction>(instructions);
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    bool yieldIt = true;
-
-                    if (!(codes[i].operand is null) && codes[i].operand.ToString().Contains("MessageShowAllowed"))
-                    {
-                        Log.Message("found if statement for trans");
-                        falseCommand = i + 1;
-
-                        yield return codes[i];
-                        yieldIt = false;
-
-                        yield return codes[falseCommand];
-
-                        MethodInfo showMessageFunction = AccessTools.Method(typeof(TKS_ZoneDeterioration.Utilities), nameof(Utilities.ContainingZoneWantsMessage));
-                        CodeInstruction function = new CodeInstruction(OpCodes.Callvirt, showMessageFunction);
-
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return function;
-
-                    }
-
-                    if (yieldIt)
-                    {
-                        yield return codes[i];
-                    }
-
-                }
-                Log.Message($"[ZoneDeterioration] Plant.TickLong Transpiler succeeded");
-
-            }
-        }
-
-    }
-
-
-
-    [HarmonyPatch(typeof(CompRottable))]
-    public static class CompRottable
-    {
-        static System.Reflection.MethodBase TargetMethod()
-        {
-            //return AccessTools.Method(typeof(CompRottable).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance));
-            return typeof(RimWorld.CompRottable).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance) as System.Reflection.MethodBase;
-        }
-
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            Log.Message($"[ZoneDeterioration] CompRottable.Tick Transpiler beginning");
-
-            bool foundIfStatement = false;
-            int statementStart = 0;
-            int statementEnd = 0;
-            bool insertedCode = false;
-
-            var codes = new List<CodeInstruction>(instructions);
-            for (int i = 0; i < codes.Count; i++)
-            {
-                bool yieldIt = true;
-
-                if (!(codes[i].operand is null) && codes[i].operand.ToString().Contains("IsInAnyStorage") && !foundIfStatement)
-                {
-                    Log.Message("found if statement for copy");
-                    statementStart = i - 2;
-                    statementEnd = i + 1;
-
-                    foundIfStatement = true;
-
-                }
-
-                if (foundIfStatement && i==(statementEnd+1) && !insertedCode)
-                {
-                    Log.Message("Inserting check for show rot message at line " + i.ToString());
-
-                    for (int x = statementStart; x <= statementEnd; x++)
-                    {
-                        CodeInstruction statement = codes[x];
-
-                        if (!(statement.operand is null) && statement.operand.ToString().Contains("IsInAnyStorage"))
+                        Log.Message("checking deterioration message for thing at " + vec);
+                        if (Utilities.ContainingStorageWantsMessage(vec, map) && Utilities.ContainingZoneWantsMessage(vec, map))
                         {
-                            MethodInfo showMessageFunction = AccessTools.Method(typeof(TKS_ZoneDeterioration.Utilities), nameof(Utilities.ContainingStorageWantsMessage));
-                            CodeInstruction replacer = new CodeInstruction(OpCodes.Callvirt, showMessageFunction);
-
-                            yield return replacer;
+                            return true;
                         }
                         else
                         {
-                            yield return statement;
+                            return false;
                         }
-
-                        insertedCode = true;
                     }
                 }
-
-                if (yieldIt)
-                {
-                    yield return codes[i];
-                }
-
             }
-            Log.Message($"[ZoneDeterioration] CompRottable.Tick Transpiler succeeded");
-
+            return true;
         }
     }
 }
