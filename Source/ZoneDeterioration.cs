@@ -16,7 +16,7 @@ namespace TKS_ZoneDeterioration
         static InsertHarmony()
         {
             Harmony harmony = new Harmony("TKS_ZoneDeterioration");
-            Harmony.DEBUG = true;
+            //Harmony.DEBUG = true;
             Log.Message("harmony debugging to " + FileLog.LogPath);
             harmony.PatchAll();
             //Harmony.DEBUG = false;
@@ -350,8 +350,11 @@ namespace TKS_ZoneDeterioration
                     RimWorld.Planet.GlobalTargetInfo target = lookTargets.TryGetPrimaryTarget();
                     IntVec3 vec = target.Cell;
                     Map map = target.Map;
-
+#if v1_6
+                    if (vec.IsValid) { 
+#else
                     if (vec != null) {
+#endif
 
                         Log.Message("checking deterioration message for thing at " + vec);
                         if (Utilities.ContainingStorageWantsMessage(vec, map) && Utilities.ContainingZoneWantsMessage(vec, map))

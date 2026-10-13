@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<ZoneShowDeteriorationMessage>Show messages</ZoneShowDeteriorationMessage>
+	<ZoneHideDeteriorationMessage>Hide messages</ZoneHideDeteriorationMessage>
+	<ZoneToggleDeteriorationMessage>Toggle whether to recieve messages when items stored here deteriorate.</ZoneToggleDeteriorationMessage>
+</LanguageData>
