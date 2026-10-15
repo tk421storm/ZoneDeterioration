@@ -5,6 +5,7 @@
 	<author>tk421storm</author>
 	<packageId>tk421storm.ZoneDeterioration</packageId>
 	<!-- a unique identifier for your mod. Must contain only a-z and periods, no spaces. -->
+	<url>https://github.com/tk421storm/ZoneDeterioration</url>
 	<supportedVersions>
 		<!-- the version(s) your mod supports -->
 		<li>1.4</li>
@@ -19,10 +20,35 @@
 			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
 			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
-		<li>
-			<packageId>UnlimitedHugs.HugsLib</packageId>
-			<displayName>HugsLib</displayName>
-			<steamWorkshopUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=818773962</steamWorkshopUrl>
-		</li>
 	</modDependencies>
+	<!-- the 1.4 and 1.5 builds still use HugsLib (1.6 onwards uses vanilla mod settings). a version listed here
+	     replaces modDependencies above, so Harmony is repeated -->
+	<modDependenciesByVersion>
+		<v1.4>
+			<li>
+				<packageId>brrainz.harmony</packageId>
+				<displayName>Harmony</displayName>
+				<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+				<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+			</li>
+			<li>
+				<packageId>UnlimitedHugs.HugsLib</packageId>
+				<displayName>HugsLib</displayName>
+				<steamWorkshopUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=818773962</steamWorkshopUrl>
+			</li>
+		</v1.4>
+		<v1.5>
+			<li>
+				<packageId>brrainz.harmony</packageId>
+				<displayName>Harmony</displayName>
+				<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+				<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+			</li>
+			<li>
+				<packageId>UnlimitedHugs.HugsLib</packageId>
+				<displayName>HugsLib</displayName>
+				<steamWorkshopUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=818773962</steamWorkshopUrl>
+			</li>
+		</v1.5>
+	</modDependenciesByVersion>
 </ModMetaData>

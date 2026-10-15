@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
-using HugsLib;
 
 namespace TKS_ZoneDeterioration
 {
@@ -17,14 +16,61 @@ namespace TKS_ZoneDeterioration
         {
             Harmony harmony = new Harmony("TKS_ZoneDeterioration");
             //Harmony.DEBUG = true;
-            Log.Message("harmony debugging to " + FileLog.LogPath);
+            ZoneDeteriorationMod.DebugMessage("harmony debugging to " + FileLog.LogPath);
             harmony.PatchAll();
             //Harmony.DEBUG = false;
-            Log.Message($"TKS_ZoneDeterioration: Patching finished");
+            ZoneDeteriorationMod.DebugMessage($"TKS_ZoneDeterioration: Patching finished");
         }
     }
 
-    public class ZoneDeteriorationBase : ModBase
+    public class ZoneDeteriorationSettings : ModSettings
+    {
+        public bool debugPrint = false;
+
+        public override void ExposeData()
+        {
+            Scribe_Values.Look(ref debugPrint, "debugPrint");
+
+            base.ExposeData();
+        }
+    }
+
+    public class ZoneDeteriorationMod : Mod
+    {
+        //static so the message prefix doesn't have to look the mod up for every message
+        public static ZoneDeteriorationSettings settings;
+
+        public ZoneDeteriorationMod(ModContentPack content) : base(content)
+        {
+            settings = GetSettings<ZoneDeteriorationSettings>();
+        }
+
+        public static void DebugMessage(string message)
+        {
+            if (settings != null && settings.debugPrint)
+            {
+                Log.Message(message);
+            }
+        }
+
+        public override void DoSettingsWindowContents(Rect inRect)
+        {
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(inRect);
+            listingStandard.CheckboxLabeled("ZoneDeteriorationDebugPrint".Translate(), ref settings.debugPrint);
+            listingStandard.End();
+            base.DoSettingsWindowContents(inRect);
+        }
+
+        public override string SettingsCategory()
+        {
+            return "ZoneDeteriorationSettingsName".Translate();
+        }
+    }
+
+    //created by the game for every new or loaded game (was a HugsLib ModBase; WorldLoaded is now FinalizeInit, which
+    //runs at the same point, once the maps are loaded)
+    public class ZoneDeteriorationBase : GameComponent
     {
         private ExtendedDataStorage _extendedDataStorage;
         public static ZoneDeteriorationBase Instance { get; private set; }
@@ -34,18 +80,14 @@ namespace TKS_ZoneDeterioration
 
         public static List<string> interestedMessages = new List<string>() { };
 
-        public override string ModIdentifier
-        {
-            get { return "TKS_ZoneDeterioration"; }
-        }
-        public ZoneDeteriorationBase()
+        public ZoneDeteriorationBase(Game game)
         {
             Instance = this;
         }
 
-        public override void WorldLoaded()
+        public override void FinalizeInit()
         {
-            base.WorldLoaded();
+            base.FinalizeInit();
 
             _extendedDataStorage = Find.World.GetComponent<ExtendedDataStorage>();
             _extendedDataStorage.Cleanup();
@@ -67,7 +109,7 @@ namespace TKS_ZoneDeterioration
                 } catch (Exception e) 
                 { } finally
                 {
-                    Log.Message("zone deterioration looking for text '" + message + "'");
+                    ZoneDeteriorationMod.DebugMessage("zone deterioration looking for text '" + message + "'");
                     interestedMessages.Add(message);
                 }
 
@@ -108,7 +150,7 @@ namespace TKS_ZoneDeterioration
 
                     if (store != null)
                     {
-                        Log.Message("checking zone message storage setting for building " + building.ThingID);
+                        ZoneDeteriorationMod.DebugMessage("checking zone message storage setting for building " + building.ThingID);
                         bool showMessage = store.GetExtendedDataFor(building).showWarning;
                         return showMessage;
                     }
@@ -140,7 +182,7 @@ namespace TKS_ZoneDeterioration
 
                 if (store != null)
                 {
-                    Log.Message("checking show messages setting for " + zone.BaseLabel);
+                    ZoneDeteriorationMod.DebugMessage("checking show messages setting for " + zone.BaseLabel);
                     bool showMessage = store.GetExtendedDataFor(zone).showWarning;
 
                     return showMessage;
@@ -356,7 +398,7 @@ namespace TKS_ZoneDeterioration
                     if (vec.IsValid) {
 #endif
 
-                        Log.Message("checking deterioration message for thing at " + vec);
+                        ZoneDeteriorationMod.DebugMessage("checking deterioration message for thing at " + vec);
                         if (Utilities.ContainingStorageWantsMessage(vec, map) && Utilities.ContainingZoneWantsMessage(vec, map))
                         {
                             return true;

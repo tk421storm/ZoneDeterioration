@@ -3,4 +3,6 @@
 	<ZoneShowDeteriorationMessage>Show messages</ZoneShowDeteriorationMessage>
 	<ZoneHideDeteriorationMessage>Hide messages</ZoneHideDeteriorationMessage>
 	<ZoneToggleDeteriorationMessage>Toggle whether to recieve messages when items stored here deteriorate.</ZoneToggleDeteriorationMessage>
+	<ZoneDeteriorationSettingsName>Zone Message Control</ZoneDeteriorationSettingsName>
+	<ZoneDeteriorationDebugPrint>Print debug messages to the log</ZoneDeteriorationDebugPrint>
 </LanguageData>
