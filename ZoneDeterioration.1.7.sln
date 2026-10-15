@@ -1,0 +1,19 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZoneDeterioration.1.7", "ZoneDeterioration.1.7.csproj", "{45F9E469-3B9A-4715-B255-EB28C79F8C34}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		1.7|Any CPU = 1.7|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{45F9E469-3B9A-4715-B255-EB28C79F8C34}.1.7|Any CPU.ActiveCfg = 1.7|Any CPU
+		{45F9E469-3B9A-4715-B255-EB28C79F8C34}.1.7|Any CPU.Build.0 = 1.7|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
