@@ -350,10 +350,10 @@ namespace TKS_ZoneDeterioration
                     RimWorld.Planet.GlobalTargetInfo target = lookTargets.TryGetPrimaryTarget();
                     IntVec3 vec = target.Cell;
                     Map map = target.Map;
-#if v1_6
-                    if (vec.IsValid) { 
-#else
+#if v1_4 || v1_5
                     if (vec != null) {
+#else
+                    if (vec.IsValid) {
 #endif
 
                         Log.Message("checking deterioration message for thing at " + vec);
