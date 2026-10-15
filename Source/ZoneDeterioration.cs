@@ -96,7 +96,8 @@ namespace TKS_ZoneDeterioration
             Map map = Find.AnyPlayerHomeMap;
             GenSpawn.Spawn(testThing, CellFinder.RandomEdgeCell(map), map, WipeMode.FullRefund);
 
-            //build interested strings list
+            //build interested strings list (static, so clear what the previous game loaded)
+            interestedMessages.Clear();
             foreach(string messageKey in interestedMessageKeys)
             {
                 string message = "";
