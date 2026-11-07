@@ -2,8 +2,10 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
 
@@ -75,10 +77,17 @@ namespace TKS_ZoneDeterioration
         private ExtendedDataStorage _extendedDataStorage;
         public static ZoneDeteriorationBase Instance { get; private set; }
 
+        //keys a game version doesn't have are skipped, so newer messages can be listed for every version
         public static List<string> interestedMessageKeys = new List<string>() { "MessageDeterioratedAway", "MessagePlantDiedOfCold", "MessagePlantDiedOfRot_LeftUnharvested",
-        "MessagePlantDiedOfRot_ExposedToLight", "MessagePlantDiedOfRot",  "MessagePlantDiedOfPoison", "MessagePlantDiedOfBlight", "MessageRottedAwayInStorage" };
+        "MessagePlantDiedOfRot_ExposedToLight", "MessagePlantDiedOfRot",  "MessagePlantDiedOfPoison", "MessagePlantDiedOfBlight", "MessageRottedAwayInStorage",
+        "MessagePlantDiedOfRot_ExposedToVacuum", "MessagePlantDiedOfPollution", "MessagePlantDiedOfNoPollution", "MessagePlantDiedOfRot_PollutedTerrain" };
 
-        public static List<string> interestedMessages = new List<string>() { };
+        //each watched message as the fixed text of its translation, in order: the pieces between the {placeholders}.
+        //matching on these works in any language, wherever it puts the thing's name and whether or not a space follows it
+        public static List<List<string>> interestedMessages = new List<List<string>>();
+
+        //a {placeholder}, or a Korean particle the game resolves next to one (same tokens as vanilla LanguageWorker_Korean)
+        private static readonly Regex PlaceholderOrJosa = new Regex(@"\{[^}]*\}|\(이\)가|\(와\)과|\(을\)를|\(은\)는|\(아\)야|\(이\)어|\(으\)로|\(이\)");
 
         public ZoneDeteriorationBase(Game game)
         {
@@ -92,32 +101,29 @@ namespace TKS_ZoneDeterioration
             _extendedDataStorage = Find.World.GetComponent<ExtendedDataStorage>();
             _extendedDataStorage.Cleanup();
 
-            Thing testThing = ThingMaker.MakeThing(ThingDefOf.Urn, ThingDefOf.Steel);
-            Map map = Find.AnyPlayerHomeMap;
-            GenSpawn.Spawn(testThing, CellFinder.RandomEdgeCell(map), map, WipeMode.FullRefund);
-
-            //build interested strings list (static, so clear what the previous game loaded)
+            //build the watched messages (static, so clear what the previous game loaded; rebuilt on every load, so it
+            //follows a language change)
             interestedMessages.Clear();
-            foreach(string messageKey in interestedMessageKeys)
+            foreach (string messageKey in interestedMessageKeys)
             {
-                string message = "";
-                //some message types will error because we dont have a thing to pass, but it will still resolve ok for our purposes
-                try
+                //the raw template, eg "{0} ist erfroren." - a key missing from the active language is shown in English,
+                //and a key this game version doesn't have at all is skipped
+                TaggedString raw;
+                if (!messageKey.TryTranslate(out raw) && !LanguageDatabase.defaultLanguage.TryGetTextFromKey(messageKey, out raw))
                 {
-                    message = messageKey.Translate("urn", testThing);
-                    message = message.Replace("urn ", "");
-                    message = message.Replace("steel ", "");
-                } catch (Exception e) 
-                { } finally
-                {
-                    ZoneDeteriorationMod.DebugMessage("zone deterioration looking for text '" + message + "'");
-                    interestedMessages.Add(message);
+                    continue;
                 }
 
+                List<string> pieces = PlaceholderOrJosa.Split(raw.RawText)
+                    .Select(p => p.Trim())
+                    .Where(p => p.Length > 0)
+                    .ToList();
+                if (pieces.Count > 0)
+                {
+                    ZoneDeteriorationMod.DebugMessage("zone deterioration looking for '" + string.Join("' + '", pieces) + "'");
+                    interestedMessages.Add(pieces);
+                }
             }
-
-            testThing.Destroy();
-
         }
 
         public ExtendedDataStorage GetExtendedDataStorage()
@@ -128,6 +134,22 @@ namespace TKS_ZoneDeterioration
 
     public static class Utilities
     {
+        //true when the text has every piece of a watched message, in order
+        public static bool MatchesMessage(string text, List<string> pieces)
+        {
+            int at = 0;
+            foreach (string piece in pieces)
+            {
+                int found = text.IndexOf(piece, at, StringComparison.Ordinal);
+                if (found < 0)
+                {
+                    return false;
+                }
+                at = found + piece.Length;
+            }
+            return true;
+        }
+
         public static bool ContainingStorageWantsMessage(Thing t)
         {
             if (t == null) { return true; }
@@ -386,9 +408,9 @@ namespace TKS_ZoneDeterioration
         [HarmonyPrefix]
         public static bool Message_Prefix(string text, LookTargets lookTargets, MessageTypeDef def, bool historical)
         {
-            foreach (string searcher in ZoneDeteriorationBase.interestedMessages)
+            foreach (List<string> pieces in ZoneDeteriorationBase.interestedMessages)
             {
-                if (text.Contains(searcher))
+                if (Utilities.MatchesMessage(text, pieces))
                 {
                     RimWorld.Planet.GlobalTargetInfo target = lookTargets.TryGetPrimaryTarget();
                     IntVec3 vec = target.Cell;
