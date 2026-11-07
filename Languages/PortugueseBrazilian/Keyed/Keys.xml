@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- Machine-drafted translation, aligned with the official RimWorld wording for key terms but not reviewed by a native speaker.
+     Corrections are welcome: https://github.com/tk421storm/ZoneDeterioration -->
+<LanguageData>
+	<ZoneShowDeteriorationMessage>Mostrar mensagens</ZoneShowDeteriorationMessage>
+	<ZoneHideDeteriorationMessage>Ocultar mensagens</ZoneHideDeteriorationMessage>
+	<ZoneToggleDeteriorationMessage>Define se você recebe mensagens quando itens guardados aqui se deterioram.</ZoneToggleDeteriorationMessage>
+	<ZoneDeteriorationSettingsName>Zone Message Control</ZoneDeteriorationSettingsName>
+	<ZoneDeteriorationDebugPrint>Mostrar mensagens de depuração no registro</ZoneDeteriorationDebugPrint>
+</LanguageData>

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- Machine-drafted translation, aligned with the official RimWorld wording for key terms but not reviewed by a native speaker.
+     Corrections are welcome: https://github.com/tk421storm/ZoneDeterioration -->
+<LanguageData>
+	<ZoneShowDeteriorationMessage>메시지 표시</ZoneShowDeteriorationMessage>
+	<ZoneHideDeteriorationMessage>메시지 숨기기</ZoneHideDeteriorationMessage>
+	<ZoneToggleDeteriorationMessage>여기에 보관된 물건이 손상될 때 메시지를 받을지 정합니다.</ZoneToggleDeteriorationMessage>
+	<ZoneDeteriorationSettingsName>Zone Message Control</ZoneDeteriorationSettingsName>
+	<ZoneDeteriorationDebugPrint>로그에 디버그 메시지 출력</ZoneDeteriorationDebugPrint>
+</LanguageData>

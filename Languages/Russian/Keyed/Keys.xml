@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- Machine-drafted translation, aligned with the official RimWorld wording for key terms but not reviewed by a native speaker.
+     Corrections are welcome: https://github.com/tk421storm/ZoneDeterioration -->
+<LanguageData>
+	<ZoneShowDeteriorationMessage>Показывать сообщения</ZoneShowDeteriorationMessage>
+	<ZoneHideDeteriorationMessage>Скрывать сообщения</ZoneHideDeteriorationMessage>
+	<ZoneToggleDeteriorationMessage>Получать ли сообщения, когда хранящиеся здесь предметы портятся.</ZoneToggleDeteriorationMessage>
+	<ZoneDeteriorationSettingsName>Zone Message Control</ZoneDeteriorationSettingsName>
+	<ZoneDeteriorationDebugPrint>Выводить отладочные сообщения в журнал</ZoneDeteriorationDebugPrint>
+</LanguageData>

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- Machine-drafted translation, aligned with the official RimWorld wording for key terms but not reviewed by a native speaker.
+     Corrections are welcome: https://github.com/tk421storm/ZoneDeterioration -->
+<LanguageData>
+	<ZoneShowDeteriorationMessage>显示消息</ZoneShowDeteriorationMessage>
+	<ZoneHideDeteriorationMessage>隐藏消息</ZoneHideDeteriorationMessage>
+	<ZoneToggleDeteriorationMessage>切换在此存放的物品损坏时是否接收消息。</ZoneToggleDeteriorationMessage>
+	<ZoneDeteriorationSettingsName>Zone Message Control</ZoneDeteriorationSettingsName>
+	<ZoneDeteriorationDebugPrint>在日志中输出调试信息</ZoneDeteriorationDebugPrint>
+</LanguageData>
